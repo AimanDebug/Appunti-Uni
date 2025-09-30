@@ -213,3 +213,27 @@ Per accedere a un membro usiamo l'operatore: `variabile**.**membro`
 ```c
 typedef char[] String;
 ```
+
+## Array bidimensionali
+
+```c
+    int a[3][3];
+```
+
+Si possono definire array N-dimensionali in modo simile a come se ne definisce un normale.
+
+> [!NOTE]
+> Si possono avere quante dimensioni si vogliono.
+>
+> ```c
+> int a[3][3][2];
+> ```
+
+## Enum
+
+`enum` definisce tipi di dato custom 
+
+
+## `typedef`
+
+Si usa per rinominare
