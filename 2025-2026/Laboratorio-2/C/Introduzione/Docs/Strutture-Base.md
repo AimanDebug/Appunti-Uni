@@ -236,4 +236,22 @@ Si possono definire array N-dimensionali in modo simile a come se ne definisce u
 
 ## `typedef`
 
-Si usa per rinominare
+Si usa per rinominare dei tipi esistenti (e.g. nomi di tipi lunghi),
+l'identificatore usato diventa un sostitutivo **lessicale** al tipo indicato.
+
+```c
+typedef char* String;
+```
+
+## Parametri dalla CLI
+
+```c
+int main(int argc, char argv[][]);
+```
+
+* `argc`: numero di parametri
+* `argv`: parametri stessi (stringhe)
+
+> [!NOTE]
+> `argv[0]` e' il nome del programma
+
