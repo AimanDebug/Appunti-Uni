@@ -255,3 +255,30 @@ int main(int argc, char argv[][]);
 > [!NOTE]
 > `argv[0]` e' il nome del programma
 
+
+## Funzioni
+
+Astrazioni di blocchi di codice con un nome
+
+### Definizione
+
+```c
+tipo nome_funzione ( lista_parametri ) {}
+```
+
+* `tipo`: tipo di ritorno (`void` per indicare che non c'è).
+* `nome_funzione`: identificatore
+* `lista_parametri`: elenco di `tipo identificatore`, separati da `,` chiamati
+parametri formali
+
+Il **prototipo** di una funzione è queste 3 cose, che inoltre la identificano
+univocamente.
+
+### Dichiarazione
+
+```c
+tipo nome_funzione ( lista_parametri_o_lista_tipi );
+```
+
+> [!NOTE]
+> L'ordine della lista di parametri conta!
