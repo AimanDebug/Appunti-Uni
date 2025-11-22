@@ -1,0 +1,7 @@
+name: gnu-arm-toolchain
+
+services:
+  gnu-arm-toolchain:
+    image: aimandebug/gnu-arm-toolchain:1.0
+    volumes:
+      - "./:/gat-dev"
