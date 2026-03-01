@@ -1,0 +1,53 @@
+$date
+	Thu Jan 22 15:18:32 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1s
+$end
+$scope module test $end
+$var wire 2 ! r [1:0] $end
+$var wire 2 " q [1:0] $end
+$var reg 2 # a [1:0] $end
+$var reg 2 $ b [1:0] $end
+$scope module divider $end
+$var wire 2 % x [1:0] $end
+$var wire 2 & y [1:0] $end
+$var wire 2 ' z [1:0] $end
+$var wire 2 ( r [1:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+b1 (
+b1 '
+b10 &
+b11 %
+b10 $
+b11 #
+b1 "
+b1 !
+$end
+#2
+b0 !
+b0 (
+b10 "
+b10 '
+b1 $
+b1 &
+b10 #
+b10 %
+#4
+b0 "
+b0 '
+b11 $
+b11 &
+b0 #
+b0 %
+#6

@@ -19,17 +19,27 @@ int main()
 
 void normalize(char* s)
 {
-	char* realS = s;
+	char* currentChar = s;
 
-	while (isspace((unsingned char)realS[0]))	
-		++realS;
+	while (isspace((unsingned char)(*currentChar))
+		++currentChar;
 
-	size_t realSLength = 0;
+	if (currentChar == '\0') // Empty string or just whitespaces
+		return;
 
-	while (!isspace((unsinged char)realS[0]) && realS[0] != '\0')
+	enum State { SPACE, CHARACTER } state = CHARACTER;
+
+	*(s++) = *(currentChar++);
+
+	while (*s != '\0')
 	{
-		*realS = tolower((unsigned char)*realS);
-		++realSLength;
-	
+		if (isspace((unsigned char)(*currentChar)))
+			switch (state)
+			{
+			case SPACE: // Last char was a space
+				++currentChar;
+				break;
+			default: // CHARACTER
+				*(s++) = *(currentChar;
 
 }

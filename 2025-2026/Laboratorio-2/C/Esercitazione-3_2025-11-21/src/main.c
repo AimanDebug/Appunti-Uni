@@ -9,7 +9,13 @@ int main()
 
 	if (!iFile)
 	{
-		perror("Error could not open.");
+		perror("Error could not open input file.");
+		return 1;
+	}
+
+	if (!oFile)
+	{
+		perror("Error could not open output file.");
 		return 1;
 	}
 
