@@ -4,9 +4,6 @@ LDFLAGS=-lm
 INTDIR=bin/intermediates
 objects=main.o
 
-.PHONY: all
-all: debug release
-
 debug: CFLAGS += -g
 debug: $(objects)
 	@mkdir -p bin/$@

@@ -1,40 +1,148 @@
+#include <math.h>
+#include <stdatomic.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <threads.h>
 
+struct {
+  float *vector;
+  size_t length;
+  float k;
+} g_thread_input;
 
-void int_vec_to_str(int vector[], size_t length, char* out_string) {
-    if (length == 0) {
-        strcpy(out_string, "[]");
-        return;
-    }
+size_t g_add_index;
+mtx_t g_add_index_mutex;
+cnd_t g_add_index_condition;
 
-    memcpy(out_string, "[ ", 2 * sizeof(char)); // Don't want the \0
-    out_string += 2;
+void fprint_float_vec(FILE *out_stream, float vector[], size_t length) {
+  fprintf(out_stream, "[");
 
-    for (size_t i = 0; i < length; ++i)
-        out_string += sprintf(out_string, "%d", vector[i]);
+  if (length == 0) {
+    fprintf(out_stream, "]");
+    return;
+  }
+
+  --length;
+
+  for (size_t i = 0; i < length; ++i)
+    fprintf(out_stream, "%f, ", vector[i]);
+
+  fprintf(out_stream, "%f]", vector[length]);
 }
 
+int thrd_exp_and_add(void *arg) {
+  size_t *index = (size_t *)arg;
 
+  // Exponentiate
+  g_thread_input.vector[*index] =
+      powf(g_thread_input.vector[*index], g_thread_input.k);
 
-int main() {
-    printf("Input vector size: ");
-    size_t length;
-    scanf("%zu", &length);
+  // Add
+  // Await turn
+  char lock_ok;
+  while ((lock_ok = mtx_lock(&g_add_index_mutex) == thrd_success) &&
+         g_add_index != *index) {
+    if (cnd_wait(&g_add_index_condition, &g_add_index_mutex) != thrd_success) {
+      fprintf(stderr,
+              "Error in waiting on condition variable in thread %zu, "
+              "exiting...",
+              *index);
+      exit(EXIT_FAILURE);
+    }
+  }
 
-    float* vector = (float*)malloc(sizeof(float) * length);
+  if (!lock_ok) {
+    fprintf(stderr, "Error in locking mutex in thread %zu, exiting...", *index);
+    exit(EXIT_FAILURE);
+  }
 
-    for (size_t i = 0; i < length; ++i) {
-        printf("Input element [%zu]: ", i);
-        scanf("%f", &vector[i]);
+  if (*index != 0)
+    // Sum with previous
+    g_thread_input.vector[*index] += g_thread_input.vector[*index - 1];
+
+  ++g_add_index;
+
+  if (mtx_unlock(&g_add_index_mutex) != thrd_success) {
+    fprintf(stderr, "Error in unlocking mutex in thread %zu, exiting...",
+            *index);
+    exit(EXIT_FAILURE);
+  }
+
+  // Wake up other threads
+  if (cnd_broadcast(&g_add_index_condition) != thrd_success) {
+    fprintf(stderr,
+            "Error in broadcasting on condition variable in thread %zu, "
+            "exiting...",
+            *index);
+    exit(EXIT_FAILURE);
+  }
+
+  return 0;
+}
+
+void solve() {
+  // Initialization
+  thrd_t *threads = (thrd_t *)malloc(sizeof(thrd_t) * g_thread_input.length);
+  size_t *input_indices =
+      (size_t *)malloc(sizeof(size_t) * g_thread_input.length);
+  g_add_index = 0;
+
+  if (mtx_init(&g_add_index_mutex, mtx_plain) != thrd_success) {
+    fprintf(stderr, "Error in initializing mutex, exiting...");
+    exit(EXIT_FAILURE);
+  }
+
+  if (cnd_init(&g_add_index_condition) != thrd_success) {
+    fprintf(stderr, "Error in initializing condition variable, exiting...");
+    exit(EXIT_FAILURE);
+  }
+
+  for (size_t i = 0; i < g_thread_input.length; ++i) {
+    input_indices[i] = i;
+    if (thrd_create(&threads[i], thrd_exp_and_add, &input_indices[i]) !=
+        thrd_success) {
+      fprintf(stderr, "Error in creating thread %zu, exiting...", i);
+      exit(EXIT_FAILURE);
+    }
+  }
+
+  for (size_t i = 0; i < g_thread_input.length; ++i)
+    if (thrd_join(threads[i], NULL) != thrd_success) {
+      fprintf(stderr, "Error in joining thread %zu, exiting...", i);
+      exit(EXIT_FAILURE);
     }
 
-    printf("Input k (power): ");
-    float k;
-    scanf("%f", &k);
+  cnd_destroy(&g_add_index_condition);
+  mtx_destroy(&g_add_index_mutex);
+  free(input_indices);
+  free(threads);
+}
 
-    printf("\nInput vector: ");
+int main() {
+  printf("Input vector size: ");
+  scanf("%zu", &g_thread_input.length);
 
-    free(vector);
+  g_thread_input.vector =
+      (float *)malloc(sizeof(float) * g_thread_input.length);
+
+  for (size_t i = 0; i < g_thread_input.length; ++i) {
+    printf("Input element [%zu]: ", i);
+    scanf("%f", &g_thread_input.vector[i]);
+  }
+
+  printf("Input k (power): ");
+  scanf("%f", &g_thread_input.k);
+
+  printf("\nInput vector:\n");
+  fprint_float_vec(stdout, g_thread_input.vector, g_thread_input.length);
+
+  printf("\n\nCalculating result...\n");
+  solve();
+  printf("Output vector:\n");
+  fprint_float_vec(stdout, g_thread_input.vector, g_thread_input.length);
+  printf("\n");
+
+  free(g_thread_input.vector);
 }
